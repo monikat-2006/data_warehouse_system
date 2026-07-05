@@ -1,47 +1,41 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import StaffDashboard from './pages/staff/StaffDashboard';
-import AdminDashboard from './pages/admin/AdminDashboard';
-
-function PrivateRoute({ children, allowedRole }) {
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
-  
-  if (!token) return <Navigate to="/login" />;
-  if (allowedRole && role !== allowedRole) return <Navigate to="/login" />;
-  return children;
-}
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import StaffDashboard from './pages/StaffDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import './styles/App.css';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route 
-          path="/staff-dashboard" 
-          element={
-            <PrivateRoute allowedRole="staff">
-              <StaffDashboard />
-            </PrivateRoute>
-          } 
-        />
-        <Route 
-          path="/admin-dashboard" 
-          element={
-            <PrivateRoute allowedRole="admin">
-              <AdminDashboard />
-            </PrivateRoute>
-          } 
-        />
-        {/* Settings page placeholder */}
-        <Route path="/settings" element={<Home />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/staff"
+            element={
+              <ProtectedRoute allowedRole="staff">
+                <StaffDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
