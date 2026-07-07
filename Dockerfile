@@ -1,15 +1,22 @@
 # Multi-stage build for production
 
 # Stage 1: Build frontend
-FROM node:18-alpine AS frontend-build
+FROM node:20-alpine AS frontend-build
+
 WORKDIR /app/frontend
+
 COPY frontend/package*.json ./
+
 RUN npm install
+
 COPY frontend/ ./
+
 RUN npm run build
+
 
 # Stage 2: Backend
 FROM python:3.11-slim
+
 WORKDIR /app
 
 # Install system dependencies
@@ -18,25 +25,25 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend files
+# Copy backend requirements
 COPY backend/requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy backend code
 COPY backend/ .
 
-# Copy built frontend from stage 1
+# Copy React production build
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
 USER appuser
 
-# Expose port
 EXPOSE 5000
 
-# Set environment variables
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
-# Run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "app:app"]

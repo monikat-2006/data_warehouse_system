@@ -59,12 +59,12 @@ app = create_app()
 
 with app.app_context():
     db.create_all()
-    if not User.query.filter_by(username='admin').first():
+    if not User.query.filter_by(email='admin@warehouse.com').first():
         admin = User(username='admin', email='admin@warehouse.com', role='admin')
         admin.set_password('admin123')
         db.session.add(admin)
         db.session.commit()
-        print('Default admin created: admin / admin123')
+        print('Default admin created: admin@warehouse.com / admin123')
 
     if Product.query.count() == 0:
         sample_products = [

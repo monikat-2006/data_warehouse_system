@@ -52,12 +52,12 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json() or {}
-    username = (data.get('username') or '').strip()
+    email = (data.get('email') or '').strip().lower()
     password = data.get('password', '')
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
-        return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
+        return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
 
     login_user(user, remember=True)
     log_activity(user.id, 'login', description=f'User {user.username} logged in')

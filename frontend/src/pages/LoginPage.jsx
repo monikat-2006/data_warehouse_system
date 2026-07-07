@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', role: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = await login(form.username, form.password);
+      const data = await login(form.email, form.password);
       if (data.success) {
         navigate(data.role === 'admin' ? '/admin' : '/staff');
       } else {
@@ -35,12 +35,13 @@ export default function LoginPage() {
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Username</label>
+            <label>Email</label>
             <input
+              type="email"
               required
-              value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })}
-              placeholder="Enter username"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="Enter email"
             />
           </div>
           <div className="form-group">
@@ -52,6 +53,18 @@ export default function LoginPage() {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="Enter password"
             />
+          </div>
+          <div className="form-group">
+            <label>Role</label>
+            <select
+              required
+              value={form.role}
+              onChange={(e) => setForm({ ...form, role: e.target.value })}
+            >
+              <option value="">Select Role</option>
+              <option value="admin">Admin</option>
+              <option value="staff">Staff</option>
+            </select>
           </div>
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
