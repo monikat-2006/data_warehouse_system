@@ -11,6 +11,10 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='staff')
+    alert_low_stock = db.Column(db.Boolean, nullable=False, default=True)
+    alert_unusual = db.Column(db.Boolean, nullable=False, default=True)
+    alert_reorder = db.Column(db.Boolean, nullable=False, default=True)
+    min_stock_threshold = db.Column(db.Integer, nullable=False, default=5)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     transactions = db.relationship('StockTransaction', backref='user', lazy='dynamic')
@@ -28,5 +32,9 @@ class User(UserMixin, db.Model):
             'username': self.username,
             'email': self.email,
             'role': self.role,
+            'alert_low_stock': self.alert_low_stock,
+            'alert_unusual': self.alert_unusual,
+            'alert_reorder': self.alert_reorder,
+            'min_stock_threshold': self.min_stock_threshold,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }

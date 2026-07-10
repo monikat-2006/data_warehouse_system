@@ -9,6 +9,9 @@ from routes.products import products_bp
 from routes.transactions import transactions_bp
 from routes.activities import activities_bp
 from routes.reports import reports_bp
+from routes.barcode import barcode_bp
+from routes.alerts import alerts_bp
+from routes.search import search_bp
 
 
 def create_app():
@@ -39,6 +42,9 @@ def create_app():
     app.register_blueprint(transactions_bp)
     app.register_blueprint(activities_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(barcode_bp)
+    app.register_blueprint(alerts_bp)
+    app.register_blueprint(search_bp)
 
     @app.route('/')
     def home():

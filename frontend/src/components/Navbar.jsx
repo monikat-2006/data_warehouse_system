@@ -1,7 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-export default function Navbar() {
+export default function Navbar({ extra }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -23,6 +23,7 @@ export default function Navbar() {
             <span className={`role-badge role-${user.role}`}>{user.role}</span>
           </span>
         )}
+        {extra && <div className="navbar-extra">{extra}</div>}
         <button className="btn btn-outline" onClick={handleLogout}>
           Logout
         </button>
@@ -30,3 +31,4 @@ export default function Navbar() {
     </nav>
   );
 }
+

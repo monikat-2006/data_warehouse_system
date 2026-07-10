@@ -9,6 +9,9 @@ import StockReportTab from '../components/admin/StockReportTab';
 import TrendTab from '../components/admin/TrendTab';
 import StaffMetricsTab from '../components/admin/StaffMetricsTab';
 import ProductMovementTab from '../components/admin/ProductMovementTab';
+import BarcodeScanner from '../components/BarcodeScanner';
+import AlertNotificationSystem from '../components/AlertNotificationSystem';
+import AdvancedSearchFilters from '../components/AdvancedSearchFilters';
 import { productsAPI } from '../services/api';
 
 const SECTIONS = [
@@ -17,6 +20,9 @@ const SECTIONS = [
   { id: 'transactions', label: 'Transactions', icon: '🔄' },
   { id: 'activities', label: 'Activities', icon: '📋' },
   { id: 'reports', label: 'Reports', icon: '📈' },
+  { id: 'barcode', label: 'Barcode Scanner', icon: '📱' },
+  { id: 'alerts', label: 'Alerts', icon: '🔔' },
+  { id: 'search', label: 'Advanced Search', icon: '🔍' },
 ];
 
 const REPORT_TABS = [
@@ -74,7 +80,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-layout">
-      <Navbar />
+      <Navbar extra={<AlertNotificationSystem inNavbar />} />
       <div className="admin-body">
         <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
         <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
@@ -111,6 +117,9 @@ export default function AdminDashboard() {
               {reportTab === 'movement' && <ProductMovementTab />}
             </div>
           )}
+          {section === 'barcode' && <BarcodeScanner />}
+          {section === 'alerts' && <AlertNotificationSystem />}
+          {section === 'search' && <AdvancedSearchFilters />}
         </main>
       </div>
 
@@ -118,3 +127,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

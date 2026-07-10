@@ -100,5 +100,30 @@ export const usersAPI = {
 
 
 
+export const barcodeAPI = {
+  lookup: (code) => api.post('/barcode/lookup', { code }),
+  generate: (product_id) => api.post('/barcode/generate', { product_id }),
+  batchLookup: (codes) => api.post('/barcode/batch-lookup', { codes }),
+};
+
+export const alertsAPI = {
+  getLowStock: () => api.get('/alerts/low-stock'),
+  getReorderSuggestions: () => api.get('/alerts/reorder-suggestions'),
+  getNotifications: (page = 1) => api.get('/alerts/notifications', { params: { page } }),
+  markRead: (id) => api.put(`/alerts/notifications/${id}/read`),
+  markAllRead: () => api.put('/alerts/notifications/read-all'),
+  getUnusualActivity: () => api.get('/alerts/unusual-activity'),
+};
+
+export const searchAPI = {
+  searchProducts: (filters) => api.post('/search/products', filters),
+  searchTransactions: (filters) => api.post('/search/transactions', filters),
+  getSuggestions: (q) => api.get('/search/suggestions', { params: { q } }),
+  listFilters: () => api.get('/search/filters'),
+  saveFilter: (data) => api.post('/search/filters/save', data),
+  updateFilter: (id, data) => api.put(`/search/filters/${id}`, data),
+  deleteFilter: (id) => api.delete(`/search/filters/${id}`),
+};
+
 export default api;
 
