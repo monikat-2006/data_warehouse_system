@@ -1,142 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Search, RefreshCw, Package, AlertCircle } from 'lucide-react';
+import { productsAPI } from '../../services/api';
 
-function Inventory() {
-  const navigate = useNavigate();
+export default function Inventory() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [product, setProduct] = useState({
-    name: '',
-    description: '',
-    category: '',
-    price: '',
-    quantity: '',
-    reorderLevel: '',
-    branch: 'Main Warehouse'
-  });
-
-  const getToken = () => localStorage.getItem('token');
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [catFilter, setCatFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
 
   const fetchProducts = async () => {
-    const token = getToken();
-    if (!token) {
-      navigate('/login');
-      return;
-    }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/products', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.status === 401) {
-        localStorage.clear();
-        navigate('/login');
-        return;
-      }
-      const data = await res.json();
+      const { data } = await productsAPI.getAll();
       setProducts(data.products || []);
-    } catch (err) {
-      setError('Failed to load products');
-    }
-    setLoading(false);
-  };
-
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
-
-    // Simple validation
-    if (!product.name.trim()) {
-      setError('Product name is required');
+    } catch (e) {
+      console.error(e);
+    } finally {
       setLoading(false);
-      return;
-    }
-    if (!product.price || isNaN(product.price)) {
-      setError('Valid price is required');
-      setLoading(false);
-      return;
-    }
-    if (!product.quantity || isNaN(product.quantity)) {
-      setError('Valid quantity is required');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const token = getToken();
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      const data = {
-        name: product.name.trim(),
-        description: product.description.trim() || '',
-        category: product.category.trim() || '',
-        price: parseFloat(product.price),
-        quantity: parseInt(product.quantity),
-        reorderLevel: parseInt(product.reorderLevel) || 10,
-        branch: product.branch
-      };
-
-      console.log('Sending:', data);
-
-      const res = await fetch('http://localhost:5000/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-      });
-
-      const result = await res.json();
-      console.log('Response:', result);
-
-      if (!res.ok) {
-        throw new Error(result.error || 'Failed to add product');
-      }
-
-      setSuccess('✅ Product added successfully!');
-      setProduct({
-        name: '',
-        description: '',
-        category: '',
-        price: '',
-        quantity: '',
-        reorderLevel: '',
-        branch: 'Main Warehouse'
-      });
-      setShowForm(false);
-      await fetchProducts();
-      setTimeout(() => setSuccess(''), 3000);
-
-    } catch (err) {
-      setError(err.message);
-    }
-    setLoading(false);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this product?')) return;
-    try {
-      const token = getToken();
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setSuccess('✅ Deleted!');
-        await fetchProducts();
-        setTimeout(() => setSuccess(''), 3000);
-      }
-    } catch (err) {
-      setError('Delete failed');
     }
   };
 
@@ -144,113 +26,87 @@ function Inventory() {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    let f = [...products];
+    if (searchTerm) {
+      f = f.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    if (catFilter !== 'all') f = f.filter(p => p.category === catFilter);
+    if (stockFilter === 'low') f = f.filter(p => p.current_stock <= p.reorder_level);
+    if (stockFilter === 'ok') f = f.filter(p => p.current_stock > p.reorder_level);
+    setFiltered(f);
+  }, [products, searchTerm, catFilter, stockFilter]);
+
+  const categories = [...new Set(products.map(p => p.category))];
+
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>📦 Inventory</h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          style={{
-            padding: '10px 25px',
-            background: showForm ? '#dc3545' : '#667eea',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '14px'
-          }}
-        >
-          {showForm ? '✕ Close' : '+ Add Product'}
-        </button>
+    <div>
+      <div className="page-header-row">
+        <div className="page-header" style={{ margin: 0 }}>
+          <h1>Products Directory</h1>
+          <p>Browse warehouse inventory and check current stock levels</p>
+        </div>
       </div>
 
-      {error && <div style={{ color: '#dc3545', padding: '12px', background: '#fde8e8', borderRadius: '8px', marginBottom: '15px' }}>❌ {error}</div>}
-      {success && <div style={{ color: '#28a745', padding: '12px', background: '#e8f8ed', borderRadius: '8px', marginBottom: '15px' }}>✅ {success}</div>}
-
-      {showForm && (
-        <div style={{ background: '#f8f9fa', padding: '25px', borderRadius: '12px', marginBottom: '20px' }}>
-          <h3 style={{ marginBottom: '20px' }}>Add New Product</h3>
-          <form onSubmit={handleAdd}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-              <input type="text" placeholder="Product Name *" value={product.name} onChange={e => setProduct({...product, name: e.target.value})} required style={inputStyle} />
-              <input type="text" placeholder="Category" value={product.category} onChange={e => setProduct({...product, category: e.target.value})} style={inputStyle} />
-              <input type="number" step="0.01" placeholder="Price *" value={product.price} onChange={e => setProduct({...product, price: e.target.value})} required style={inputStyle} />
-              <input type="number" placeholder="Quantity *" value={product.quantity} onChange={e => setProduct({...product, quantity: e.target.value})} required style={inputStyle} />
-              <input type="number" placeholder="Reorder Level" value={product.reorderLevel} onChange={e => setProduct({...product, reorderLevel: e.target.value})} style={inputStyle} />
-              <select value={product.branch} onChange={e => setProduct({...product, branch: e.target.value})} style={inputStyle}>
-                <option value="Main Warehouse">Main Warehouse</option>
-                <option value="East Branch">East Branch</option>
-                <option value="West Branch">West Branch</option>
-                <option value="North Branch">North Branch</option>
-                <option value="South Branch">South Branch</option>
-              </select>
-            </div>
-            <textarea placeholder="Description" value={product.description} onChange={e => setProduct({...product, description: e.target.value})} style={{ ...inputStyle, width: '100%', minHeight: '80px', marginTop: '15px' }} />
-            <div style={{ marginTop: '15px' }}>
-              <button type="submit" disabled={loading} style={{ padding: '12px 35px', background: '#667eea', color: '#fff', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, fontWeight: 'bold' }}>
-                {loading ? '⏳ Adding...' : '🚀 Add Product'}
-              </button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ padding: '12px 35px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '8px', marginLeft: '10px', cursor: 'pointer', fontWeight: 'bold' }}>
-                Cancel
-              </button>
-            </div>
-          </form>
+      <div className="search-row">
+        <div className="search-box">
+          <Search size={16} />
+          <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by product name or SKU..." />
         </div>
-      )}
+        <select className="filter-select" value={catFilter} onChange={e => setCatFilter(e.target.value)}>
+          <option value="all">All Categories</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select className="filter-select" value={stockFilter} onChange={e => setStockFilter(e.target.value)}>
+          <option value="all">All Stock Status</option>
+          <option value="low">Low Stock</option>
+          <option value="ok">In Stock</option>
+        </select>
+        <button className="btn-icon" onClick={fetchProducts}><RefreshCw size={16} /></button>
+      </div>
 
-      <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
-        <h3>Product List ({products.length})</h3>
-        {loading && <p>⏳ Loading...</p>}
-        {products.length === 0 && !loading && <p style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>📭 No products</p>}
-        {products.length > 0 && (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Category</th>
-                <th style={thStyle}>Price</th>
-                <th style={thStyle}>Qty</th>
-                <th style={thStyle}>Reorder</th>
-                <th style={thStyle}>Branch</th>
-                <th style={thStyle}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={tdStyle}><b>{p.name}</b></td>
-                  <td style={tdStyle}>{p.category || '-'}</td>
-                  <td style={tdStyle}>₹{p.price?.toFixed(2) || '0.00'}</td>
-                  <td style={{ ...tdStyle, color: p.quantity < p.reorderLevel ? '#dc3545' : '#28a745' }}>{p.quantity || 0}{p.quantity < p.reorderLevel && ' ⚠️'}</td>
-                  <td style={tdStyle}>{p.reorderLevel || 10}</td>
-                  <td style={tdStyle}>{p.branch || '-'}</td>
-                  <td style={tdStyle}>
-                    <button onClick={() => handleDelete(p.id)} style={{ padding: '5px 15px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-                      🗑️ Delete
-                    </button>
-                  </td>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        {loading ? (
+          <div className="loading"><div className="spinner" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="empty-state">
+            <Package size={48} />
+            <h3>No products found</h3>
+            <p>Try adjusting your search or filters.</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map(p => (
+                  <tr key={p.id}>
+                    <td style={{ fontWeight: 600 }}>{p.name}</td>
+                    <td style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>{p.sku}</td>
+                    <td><span className="badge badge-info">{p.category}</span></td>
+                    <td style={{ fontWeight: 700, color: p.current_stock <= p.reorder_level ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                      {p.current_stock}
+                    </td>
+                    <td>
+                      {p.current_stock <= p.reorder_level
+                        ? <span className="badge badge-danger"><AlertCircle size={11} /> Low Stock</span>
+                        : <span className="badge badge-success">In Stock</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
   );
 }
-
-const inputStyle = {
-  padding: '10px 14px',
-  border: '1px solid #ced4da',
-  borderRadius: '6px',
-  fontSize: '14px',
-  width: '100%',
-  boxSizing: 'border-box',
-  outline: 'none'
-};
-
-const thStyle = { padding: '12px', textAlign: 'left', fontWeight: '600', fontSize: '14px' };
-const tdStyle = { padding: '12px', textAlign: 'left', fontSize: '14px' };
-
-export default Inventory;

@@ -128,39 +128,55 @@ def create_app():
 
     @app.route("/api/users", methods=["GET"])
     def get_users():
-
         from flask_login import current_user
-
 
         if (
             not current_user.is_authenticated
             or current_user.role != "admin"
         ):
-
             return jsonify({
-                "success":False,
-                "message":"Admin access required"
-            }),403
-
-
+                "success": False,
+                "message": "Admin access required"
+            }), 403
 
         users = (
             User.query
-            .filter_by(role="staff")
             .order_by(User.username)
             .all()
         )
 
+        return jsonify({
+            "success": True,
+            "users": [u.to_dict() for u in users]
+        })
+
+
+    @app.route("/api/dashboard/stats", methods=["GET"])
+    def dashboard_stats():
+        from flask_login import current_user
+        if not current_user.is_authenticated:
+            return jsonify({"success": False, "message": "Authentication required"}), 401
+
+        from models import StockTransaction
+        from sqlalchemy import func
+
+        total_products = Product.query.count()
+        total_value = db.session.query(
+            func.sum(Product.price * Product.current_stock)
+        ).scalar() or 0
+        low_stock = Product.query.filter(
+            Product.current_stock <= Product.reorder_level
+        ).count()
+        total_transactions = StockTransaction.query.count()
+        total_users = User.query.filter_by(role="staff").count()
 
         return jsonify({
-
-            "success":True,
-
-            "users":[
-                u.to_dict()
-                for u in users
-            ]
-
+            "success": True,
+            "total_products": total_products,
+            "total_value": round(float(total_value), 2),
+            "low_stock": low_stock,
+            "total_transactions": total_transactions,
+            "total_staff": total_users,
         })
 
 

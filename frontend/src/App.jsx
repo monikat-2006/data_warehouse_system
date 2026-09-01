@@ -4,8 +4,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import StaffDashboard from './pages/StaffDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import StaffDashboard from './pages/staff/StaffDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import './styles/App.css';
 
 function App() {

@@ -1,251 +1,143 @@
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { 
-  Package, 
-  Truck, 
-  Warehouse, 
-  Shield, 
-  BarChart3, 
-  Users,
-  LogIn,
-  UserPlus,
-  HelpCircle,
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  TrendingUp,
-  Zap,
-  Globe,
-  Headphones
+import { Link } from 'react-router-dom';
+import {
+  Package, BarChart3, Shield, Zap, TrendingUp, Users,
+  Database, Download, Bell, Search, ChevronRight, Star
 } from 'lucide-react';
-import './Home.css';
+
+const features = [
+  { icon: <Package size={24} />, color: 'rgba(108,99,255,0.15)', iconColor: 'var(--accent-primary)', title: 'Smart Inventory', desc: 'Real-time product tracking with low-stock alerts, reorder level management, and SKU-based search.' },
+  { icon: <BarChart3 size={24} />, color: 'rgba(79,172,254,0.15)', iconColor: 'var(--accent-blue)', title: 'Analytics Dashboard', desc: 'Visual insights with interactive charts — stock trends, category breakdown, and transaction volume.' },
+  { icon: <Shield size={24} />, color: 'rgba(67,233,123,0.15)', iconColor: 'var(--accent-green)', title: 'Role-Based Access', desc: 'Separate admin and staff portals with fine-grained permissions and complete audit trails.' },
+  { icon: <Download size={24} />, color: 'rgba(250,130,49,0.15)', iconColor: 'var(--accent-orange)', title: 'CSV Export & Print', desc: 'Generate detailed reports for inventory, transactions, and users. Export to CSV or print instantly.' },
+  { icon: <Bell size={24} />, color: 'rgba(255,71,87,0.15)', iconColor: 'var(--accent-red)', title: 'Smart Alerts', desc: 'Automatic notifications for low stock, unusual activity, and reorder suggestions.' },
+  { icon: <Database size={24} />, color: 'rgba(162,155,254,0.15)', iconColor: 'var(--accent-purple)', title: 'PostgreSQL Backend', desc: 'Enterprise-grade database with Flask REST APIs, session authentication, and full transaction history.' },
+];
+
+const stats = [
+  { value: '6+', label: 'Core Modules' },
+  { value: '99.9%', label: 'Uptime' },
+  { value: 'Real-time', label: 'Data Sync' },
+  { value: '2-Role', label: 'Access Control' },
+];
 
 export default function HomePage() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const isLoggedIn = !!user;
-  const userRole = user?.role;
-
-  const handleGetStarted = () => {
-    if (isLoggedIn) {
-      if (userRole === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/staff');
-      }
-    } else {
-      navigate('/register');
-    }
-  };
-
-  const features = [
-    { icon: <Zap size={24} />, title: 'Real-time Tracking', description: 'Monitor inventory levels in real-time with instant updates' },
-    { icon: <Shield size={24} />, title: 'Role-Based Access', description: 'Secure access control for staff and admin users' },
-    { icon: <BarChart3 size={24} />, title: 'Advanced Analytics', description: 'Detailed insights and reports for better decision making' },
-    { icon: <Clock size={24} />, title: 'Transaction History', description: 'Complete history of all stock movements and activities' },
-    { icon: <Globe size={24} />, title: 'Multi-Branch Support', description: 'Manage multiple warehouse branches from one platform' },
-    { icon: <TrendingUp size={24} />, title: 'Performance Metrics', description: 'Track KPIs and optimize warehouse operations' }
-  ];
-
-  const stats = [
-    { number: '99.9%', label: 'Uptime', icon: <CheckCircle size={20} /> },
-    { number: '24/7', label: 'Support', icon: <Headphones size={20} /> },
-    { number: '1000+', label: 'Products Managed', icon: <Package size={20} /> },
-    { number: '50+', label: 'Warehouses', icon: <Warehouse size={20} /> }
-  ];
-
   return (
-    <div className="home-container">
-      {/* Navigation Bar */}
+    <div className="home-page">
+      {/* Navbar */}
       <nav className="home-nav">
-        <div className="nav-container">
-          <div className="logo-section">
-            <Warehouse size={28} className="logo-icon" />
-            <span className="logo-text">Smart Inventory</span>
+        <div className="home-nav-logo">
+          <div className="home-nav-logo-icon">
+            <Package size={20} color="#fff" />
           </div>
-          
-          <div className="nav-buttons">
-            {!isLoggedIn ? (
-              <>
-                <button className="nav-btn login-btn" onClick={() => navigate('/login')}>
-                  <LogIn size={18} /> Login
-                </button>
-                <button className="nav-btn register-btn" onClick={() => navigate('/register')}>
-                  <UserPlus size={18} /> Register
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="nav-btn dashboard-btn" onClick={handleGetStarted}>
-                  Go to Dashboard <ArrowRight size={18} />
-                </button>
-              </>
-            )}
-            <button className="nav-btn help-btn" onClick={() => document.getElementById('help-section').scrollIntoView({ behavior: 'smooth' })}>
-              <HelpCircle size={18} /> Help
-            </button>
-          </div>
+          <span className="home-nav-logo-text">WarehouseIQ</span>
+        </div>
+        <div className="home-nav-links">
+          <Link to="/login" className="btn btn-secondary btn-sm">Sign In</Link>
+          <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-content">
-          <div className="hero-badge">
-            <Truck size={16} />
-            <span>Smart Warehouse Management System</span>
-          </div>
-          <h1 className="hero-title">
-            Manage Your Warehouse
-            <span className="gradient-text"> Smarter & Faster</span>
-          </h1>
-          <p className="hero-description">
-            Complete role-based warehouse management system with 
-            real-time inventory tracking, analytics, and centralized admin oversight.
-          </p>
-          <div className="hero-buttons">
-            <button className="hero-primary-btn" onClick={handleGetStarted}>
-              Get Started <ArrowRight size={20} />
-            </button>
-            <button className="hero-secondary-btn" onClick={() => document.getElementById('features-section').scrollIntoView({ behavior: 'smooth' })}>
-              Learn More
-            </button>
-          </div>
-          
-          <div className="hero-stats">
-            {stats.map((stat, index) => (
-              <div key={index} className="stat-item">
-                {stat.icon}
-                <div>
-                  <h3>{stat.number}</h3>
-                  <p>{stat.label}</p>
-                </div>
+      {/* Hero */}
+      <section className="home-hero">
+        <div className="home-hero-tag">
+          <Star size={14} />
+          Smart E-Commerce Data Warehouse
+        </div>
+        <h1>
+          Intelligent Inventory<br />
+          <span className="gradient-text">Management System</span>
+        </h1>
+        <p>
+          A full-stack warehouse management platform built with React, Flask & PostgreSQL.
+          Track products, manage stock, analyze trends — all in one place.
+        </p>
+        <div className="home-hero-buttons">
+          <Link to="/login" className="btn btn-primary" style={{ fontSize: 16, padding: '14px 32px' }}>
+            <Zap size={18} /> Get Started
+          </Link>
+          <Link to="/register" className="btn btn-secondary" style={{ fontSize: 16, padding: '14px 32px' }}>
+            Create Account <ChevronRight size={18} />
+          </Link>
+        </div>
+
+        {/* Hero Dashboard Preview */}
+        <div style={{
+          marginTop: 60, maxWidth: 900, margin: '60px auto 0',
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)', padding: '24px',
+          boxShadow: 'var(--shadow-lg), var(--shadow-glow)'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+            {[
+              { label: 'Total Products', value: '1,248', color: 'var(--accent-primary)', icon: '📦' },
+              { label: 'Inventory Value', value: '$84,320', color: 'var(--accent-green)', icon: '💰' },
+              { label: 'Low Stock Items', value: '12', color: 'var(--accent-red)', icon: '⚠️' },
+              { label: 'Transactions', value: '3,891', color: 'var(--accent-blue)', icon: '🔄' },
+            ].map((s, i) => (
+              <div key={i} style={{
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '16px', textAlign: 'center'
+              }}>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: s.color }}>{s.value}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.label}</div>
               </div>
             ))}
           </div>
-        </div>
-        
-        <div className="hero-image">
-          <div className="floating-card card-1">
-            <Package size={32} />
-            <div>
-              <p>Total Products</p>
-              <h4>1,284</h4>
-            </div>
-          </div>
-          <div className="floating-card card-2">
-            <Users size={32} />
-            <div>
-              <p>Active Users</p>
-              <h4>156</h4>
-            </div>
-          </div>
-          <div className="floating-card card-3">
-            <TrendingUp size={32} />
-            <div>
-              <p>Stock Value</p>
-              <h4>$2.5M</h4>
-            </div>
-          </div>
-          <div className="hero-graphic">
-            <div className="graphic-circle"></div>
-            <div className="graphic-circle-2"></div>
-            <Package className="graphic-icon" size={64} />
+          <div style={{
+            background: 'var(--bg-secondary)', borderRadius: 'var(--radius)',
+            padding: '16px', display: 'flex', alignItems: 'center', gap: 12
+          }}>
+            <Search size={16} style={{ color: 'var(--text-muted)' }} />
+            <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Search products, transactions, reports...</span>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features-section" className="features-section">
-        <div className="section-container">
-          <div className="section-header">
-            <h2>Powerful Features</h2>
-            <p>Everything you need to manage your warehouse efficiently</p>
-          </div>
-          
-          <div className="features-grid">
-            {features.map((feature, index) => (
-              <div key={index} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
+      {/* Features */}
+      <section className="home-features">
+        <h2>Everything You Need to<br /><span style={{ color: 'var(--accent-primary)' }}>Run Your Warehouse</span></h2>
+        <div className="features-grid">
+          {features.map((f, i) => (
+            <div key={i} className="feature-card">
+              <div className="feature-icon" style={{ background: f.color, color: f.iconColor }}>
+                {f.icon}
               </div>
-            ))}
-          </div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Help Section */}
-      <section id="help-section" className="help-section">
-        <div className="section-container">
-          <div className="help-header">
-            <HelpCircle size={40} />
-            <h2>How Can We Help You?</h2>
-            <p>Get started with Smart Inventory Management System</p>
-          </div>
-          
-          <div className="help-grid">
-            <div className="help-card">
-              <h3>📚 Getting Started Guide</h3>
-              <p>Learn how to set up your warehouse, add products, and manage inventory</p>
+      {/* Stats */}
+      <section className="home-stats-section">
+        <h2 style={{ marginBottom: 40 }}>Built for <span style={{ color: 'var(--accent-primary)' }}>Scale</span></h2>
+        <div className="home-stats-grid">
+          {stats.map((s, i) => (
+            <div key={i} className="home-stat">
+              <div className="home-stat-value">{s.value}</div>
+              <div className="home-stat-label">{s.label}</div>
             </div>
-            
-            <div className="help-card">
-              <h3>👥 User Roles Explained</h3>
-              <p>Understand the difference between Staff and Admin privileges</p>
-            </div>
-            
-            <div className="help-card">
-              <h3>📊 Analytics & Reports</h3>
-              <p>How to generate reports and analyze warehouse performance</p>
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-container">
-          <h2>Ready to Optimize Your Warehouse?</h2>
-          <p>Join thousands of businesses using Smart Inventory Management System</p>
-          {!isLoggedIn ? (
-            <div className="cta-buttons">
-              <button className="cta-primary" onClick={() => navigate('/register')}>
-                Create Free Account
-              </button>
-              <button className="cta-secondary" onClick={() => navigate('/login')}>
-                Login to Existing Account
-              </button>
-            </div>
-          ) : (
-            <button className="cta-primary" onClick={handleGetStarted}>
-              Go to Dashboard
-            </button>
-          )}
+        <div style={{ marginTop: 48, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link to="/login" className="btn btn-primary" style={{ fontSize: 15, padding: '13px 28px' }}>
+            <Zap size={16} /> Start Now — It's Free
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="footer">
-        <div className="footer-container">
-          <div className="footer-section">
-            <div className="footer-logo">
-              <Warehouse size={24} />
-              <span>Smart Inventory</span>
-            </div>
-            <p>Smart warehouse management solution for modern businesses.</p>
+      <footer className="home-footer">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ width: 28, height: 28, background: 'var(--grad-primary)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Package size={14} color="#fff" />
           </div>
-          
-          <div className="footer-section">
-            <h4>Product</h4>
-            <a href="#features-section">Features</a>
-            <a href="#help-section">Help</a>
-          </div>
+          <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>WarehouseIQ</span>
         </div>
-        
-        <div className="footer-bottom">
-          <p>&copy; 2026 Smart Inventory. All rights reserved.</p>
-        </div>
+        <p>Smart E-Commerce Data Warehouse & Inventory Management System</p>
+        <p style={{ marginTop: 4 }}>Built with React · Flask · PostgreSQL</p>
       </footer>
     </div>
   );

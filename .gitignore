@@ -73,3 +73,4 @@ logs/
 # OS
 .DS_Store
 Thumbs.db<arg_value>EmptyFile</arg_key><arg_value>false
+backend/.env 

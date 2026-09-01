@@ -1,73 +1,66 @@
 import { useNavigate } from 'react-router-dom';
-import { Activity } from 'lucide-react';
-import { 
-  LayoutDashboard, 
-  Package, 
-  Users, 
-  BarChart3, 
-  FileText,
-  LogOut,
-  Warehouse,
-  Settings,
-  Bell
+import { useAuth } from '../../contexts/AuthContext';
+import {
+  Package, LayoutDashboard, Users, BarChart3,
+  FileText, Activity, LogOut, ShoppingBag, Bell
 } from 'lucide-react';
 
-function AdminSidebar({ activeTab, setActiveTab, user }) {
+const navItems = [
+  { id: 'home', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+  { id: 'inventory', label: 'Inventory', icon: <Package size={18} /> },
+  { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={18} /> },
+  { id: 'reports', label: 'Reports', icon: <FileText size={18} /> },
+  { id: 'users', label: 'Staff Users', icon: <Users size={18} /> },
+  { id: 'activity', label: 'Activity Log', icon: <Activity size={18} /> },
+];
+
+export default function AdminSidebar({ activeTab, setActiveTab, user }) {
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.clear();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
-  const menuItems = [
-    { id: 'home', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    { id: 'inventory', label: 'All Inventory', icon: <Package size={20} /> },
-    { id: 'users', label: 'User Management', icon: <Users size={20} /> },
-    { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={20} /> },
-    { id: 'reports', label: 'Reports', icon: <FileText size={20} /> },
-    { id: 'activity', label: 'Activity Log', icon: <Activity size={20} /> },
-  ];
-
   return (
-    <div className="admin-sidebar">
-      <div className="admin-sidebar-header">
-        <div className="admin-logo">
-          <Warehouse size={32} />
-          <span>Admin Portal</span>
+    <div className="dashboard-sidebar">
+      <div className="sidebar-logo">
+        <div className="sidebar-logo-icon">
+          <ShoppingBag size={20} color="#fff" />
         </div>
-        <div className="admin-user-badge">
-          <div className="admin-user-avatar">
-            {user?.name?.charAt(0) || 'A'}
-          </div>
-          <div className="admin-user-info">
-            <p className="admin-user-name">{user?.name || 'Admin'}</p>
-            <p className="admin-user-role">Administrator</p>
-          </div>
+        <div>
+          <div className="sidebar-logo-text">WarehouseIQ</div>
+          <div className="sidebar-logo-sub">Admin Portal</div>
         </div>
       </div>
 
-      <nav className="admin-sidebar-nav">
-        {menuItems.map(item => (
+      <nav className="sidebar-nav">
+        <div className="sidebar-section-label">Main Menu</div>
+        {navItems.map((item) => (
           <button
             key={item.id}
-            className={`admin-nav-item ${activeTab === item.id ? 'active' : ''}`}
+            className={`sidebar-nav-item ${activeTab === item.id ? 'active' : ''}`}
             onClick={() => setActiveTab(item.id)}
           >
             {item.icon}
-            <span>{item.label}</span>
+            {item.label}
           </button>
         ))}
       </nav>
 
-      <div className="admin-sidebar-footer">
-        <button className="admin-logout-btn" onClick={handleLogout}>
-          <LogOut size={20} />
-          <span>Logout</span>
+      <div className="sidebar-user">
+        <div className="sidebar-avatar">
+          {user?.username?.[0]?.toUpperCase() || 'A'}
+        </div>
+        <div className="sidebar-user-info">
+          <div className="sidebar-username">{user?.username || 'Admin'}</div>
+          <div className="sidebar-role">Administrator</div>
+        </div>
+        <button className="sidebar-logout-btn" onClick={handleLogout} title="Logout">
+          <LogOut size={16} />
         </button>
       </div>
     </div>
   );
 }
-
-export default AdminSidebar;
